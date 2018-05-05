@@ -37,6 +37,16 @@ minValue = 700
 startingSpeed = 1500
 
 """
+Function Name: arm
+Description: Stop every action your Pi is performing for ESC ofcourse.
+Parameters: N/A
+Return:N/A
+"""           
+def stop(pi, propPin):
+    pi.set_servo_pulsewidth(propPin, 0)
+    pi.stop(pi, propPin)
+
+"""
 Function Name: manualDrive
 Description: Program your ESC, if required
 Parameters: N/A
@@ -94,7 +104,7 @@ Parameters: N/A
 Return: N/A
 """  
 def control(pi, propPin): 
-    print("Starting the motor, I hope its calibrated and armed, if not restart by giving 'x'")
+    print("Starting the motor, I hope its calibrated and armed, if not restart prompt by giving 'x'")
     time.sleep(1)
     
     speed = startingSpeed
@@ -144,16 +154,6 @@ def arm(pi, propPin):
         pi.set_servo_pulsewidth(propPin, minValue)
         time.sleep(1)
         control(pi, propPin) 
-
-"""
-Function Name: arm
-Description: Stop every action your Pi is performing for ESC ofcourse.
-Parameters: N/A
-Return:N/A
-"""           
-def stop(pi, propPin):
-    pi.set_servo_pulsewidth(propPin, 0)
-    pi.stop(pi, propPin)
 
 #Start of the program
 print("Type bl OR br OR fr OR fl to choose motor")
