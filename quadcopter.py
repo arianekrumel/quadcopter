@@ -85,7 +85,7 @@ def calibrate(pi, propPin):
             pi.set_servo_pulsewidth(propPin, minValue)
             time.sleep(1)
             print("Control start...")
-            control()
+            control(pi, propPin)
 
 """
 Function Name: control
@@ -116,13 +116,13 @@ def control(pi, propPin):
             speed -= 10     # decrementing the speed
             print("speed = {}".format(speed))
         elif inp == "stop":
-            stop()          #going for the stop function
+            stop(pi, propPin)          #going for the stop function
             break
         elif inp == "manual":
-            manualDrive()
+            manualDrive(pi, propPin)
             break
         elif inp == "arm":
-            arm()
+            arm(pi, propPin)
             break	
         else:
             print("Please press a, q, d OR e")
@@ -143,7 +143,7 @@ def arm(pi, propPin):
         time.sleep(1)
         pi.set_servo_pulsewidth(propPin, minValue)
         time.sleep(1)
-        control() 
+        control(pi, propPin) 
 
 """
 Function Name: arm
@@ -153,7 +153,7 @@ Return:N/A
 """           
 def stop(pi, propPin):
     pi.set_servo_pulsewidth(propPin, 0)
-    pi.stop()
+    pi.stop(pi, propPin)
 
 #Start of the program
 print("Type bl OR br OR fr OR fl to choose motor")
