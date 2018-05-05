@@ -19,9 +19,9 @@ time.sleep(1)
 
 # Connect GPIO pins to ESCs
 propPinBL = 4
-propPinBR = 5
-propPinFR = 6
-propPinFL = 7
+propPinBR = 17 # Blue wires
+propPinFR = 27 # Red wires
+propPinFL = 22 # Green wires
 
 piBL = pigpio.pi();
 piBL.set_servo_pulsewidth(propPinBL, 0) 
