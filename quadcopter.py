@@ -2,9 +2,6 @@
 Quadcopter Main Control Program
 Based on: Instructables Driving an ESC Brushless Motor Using Raspberry Pi
 http://www.instructables.com/id/Driving-an-ESCBrushless-Motor-Using-Raspberry-Pi/
-
-This program will let you test your ESC and brushless motor.
-Make sure your battery is not connected if you are going to calibrate it at first.
 '''
 
 # Libraries
@@ -155,37 +152,55 @@ def arm(pi, propPin):
         time.sleep(1)
         control(pi, propPin) 
 
-#Start of the program
-print("Type bl OR br OR fr OR fl to choose motor")
-inp = input()
-if inp == "bl":
-    pi = piBL
-    propPin = propPinBL
-elif inp == "br":
-    pi = piBR
-    propPin = propPinBR
-elif inp == "fr":
-    pi = piFR
-    propPin = propPinFR
-elif inp == "fl":
-    pi = piFL
-    propPin = propPinFL
-else :
-    print("Type bl OR br OR fr OR fl to choose motor")
+"""
+Function Name: switch
+Description: This is the arming procedure of an ESC 
+Parameters: N/A
+Return: N/A
+"""  
+def switch()
+	while True
+		print("Type bl OR br OR fr OR fl to choose motor")
+		inp = input()
+		if inp == "bl":
+			pi = piBL
+	 		propPin = propPinBL
+	 		break
+		elif inp == "br":
+	  		pi = piBR
+		    propPin = propPinBR
+	 		break
+		elif inp == "fr":
+		    pi = piFR
+		    propPin = propPinFR
+	 		break
+		elif inp == "fl":
+		    pi = piFL
+		    propPin = propPinFL
+	 		break
+		else :
+	 	   print("Type bl OR br OR fr OR fl to choose motor")
+	return(pi, propPin)
+	 	   
 
+#Start of the program
+(pi, propPin) = switch()
 print("For first time launch, select calibrate")    
-print("Type the exact word for the function you want")
-print("calibrate OR manual OR control OR arm OR stop")    
-inp = input()
-if inp == "manual":
-    manualDrive(pi, propPin)
-elif inp == "calibrate":
-    calibrate(pi, propPin)
-elif inp == "arm":
-   arm(pi, propPin)
-elif inp == "control":
-    control(pi, propPin)
-elif inp == "stop":
-    stop(pi, propPin)
-else :
-    print("Please reset")
+while True
+	print("Type the exact word for the function you want")
+	print("calibrate OR manual OR control OR arm OR stop OR switch")    
+	inp = input()
+	if inp == "manual":
+	    manualDrive(pi, propPin)
+	elif inp == "calibrate":
+	    calibrate(pi, propPin)
+	elif inp == "arm":
+	   arm(pi, propPin)
+	elif inp == "control":
+	    control(pi, propPin)
+	elif inp == "stop":
+	    stop(pi, propPin)
+	elif inp == "switch":
+	    (pi, propPin) = switch()
+	else :
+	    print("Type calibrate OR manual OR control OR arm OR stop OR switch")
