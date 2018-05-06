@@ -31,7 +31,7 @@ piFL.set_servo_pulsewidth(propPinFL, 0)
 
 maxValue = 2000
 minValue = 700
-startingSpeed = 1500
+startingSpeed = 700
 
 """
 Function Name: arm
