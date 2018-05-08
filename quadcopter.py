@@ -31,7 +31,7 @@ piFL.set_servo_pulsewidth(propPinFL, 0)
 
 maxValue = 2000
 minValue = 700
-startingSpeed = 1500
+startingSpeed = 700
 
 """
 Function Name: arm
@@ -158,49 +158,50 @@ Description: This is the arming procedure of an ESC
 Parameters: N/A
 Return: N/A
 """  
-def switch()
-	while True
-		print("Type bl OR br OR fr OR fl to choose motor")
-		inp = input()
-		if inp == "bl":
-			pi = piBL
-	 		propPin = propPinBL
-	 		break
-		elif inp == "br":
-	  		pi = piBR
-		    propPin = propPinBR
-	 		break
-		elif inp == "fr":
-		    pi = piFR
-		    propPin = propPinFR
-	 		break
-		elif inp == "fl":
-		    pi = piFL
-		    propPin = propPinFL
-	 		break
-		else :
-	 	   print("Type bl OR br OR fr OR fl to choose motor")
-	return(pi, propPin)
+def switch():
+    print("Switch!")
+    while True:
+        print("Type bl OR br OR fr OR fl to choose motor")
+        inp = input()
+        if inp == "bl":
+            pi = piBL
+            propPin = propPinBL
+            break
+        elif inp == "br":
+            pi = piBR
+            propPin = propPinBR
+            break
+        elif inp == "fr":
+            pi = piFR
+            propPin = propPinFR
+            break
+        elif inp == "fl":
+            pi = piFL
+            propPin = propPinFL
+            break
+        else :
+            print("Type bl OR br OR fr OR fl to choose motor")
+    return(pi, propPin)
 	 	   
 
 #Start of the program
 (pi, propPin) = switch()
 print("For first time launch, select calibrate")    
-while True
-	print("Type the exact word for the function you want")
-	print("calibrate OR manual OR control OR arm OR stop OR switch")    
-	inp = input()
-	if inp == "manual":
-	    manualDrive(pi, propPin)
-	elif inp == "calibrate":
-	    calibrate(pi, propPin)
-	elif inp == "arm":
-	   arm(pi, propPin)
-	elif inp == "control":
-	    control(pi, propPin)
-	elif inp == "stop":
-	    stop(pi, propPin)
-	elif inp == "switch":
-	    (pi, propPin) = switch()
-	else :
-	    print("Type calibrate OR manual OR control OR arm OR stop OR switch")
+while True:
+    print("Type the exact word for the function you want")
+    print("calibrate OR manual OR control OR arm OR stop OR switch")    
+    inp = input()
+    if inp == "manual":
+        manualDrive(pi, propPin)
+    elif inp == "calibrate":
+        calibrate(pi, propPin)
+    elif inp == "arm":
+       arm(pi, propPin)
+    elif inp == "control":
+        control(pi, propPin)
+    elif inp == "stop":
+        stop(pi, propPin)
+    elif inp == "switch":
+        (pi, propPin) = switch()
+    else :
+        print("Type calibrate OR manual OR control OR arm OR stop OR switch")
