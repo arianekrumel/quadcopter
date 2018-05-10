@@ -18,6 +18,7 @@
 
 
 void setup() {
+  delay(1000);
   pinMode(3, INPUT);
   Serial.begin(9600);
 }
@@ -28,5 +29,6 @@ void loop() {
   delay(500);
   //Serial.println("Test");
 }
+
 
 

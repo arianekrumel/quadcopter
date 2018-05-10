@@ -30,6 +30,7 @@ int mappedData = 0;
 char trim;
 
 void setup() {
+  delay(1000);
   pinMode(pinRoll, INPUT);
   pinMode(pinPitch, INPUT);
   pinMode(pinThrust, INPUT);
