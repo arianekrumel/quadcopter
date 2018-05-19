@@ -96,6 +96,49 @@ def calibrate(pi, propPin):
             control(pi, propPin)
 
 """
+Function Name: calibrateAll
+Description: This is the auto calibration procedure of a normal ESC
+Parameters: N/A
+Return:N/A
+""" 
+def calibrateAll():
+    piBL.set_servo_pulsewidth(propPins['bl'], 0)
+    piBR.set_servo_pulsewidth(propPins['br'], 0)
+    piFR.set_servo_pulsewidth(propPins['fr'], 0)
+    piFL.set_servo_pulsewidth(propPins['fl'], 0)
+    print("Disconnect the battery and press Enter")
+    inp = input()
+    if inp == '':
+        piBL.set_servo_pulsewidth(propPins['bl'], maxValue)
+        piBR.set_servo_pulsewidth(propPins['br'], maxValue)
+        piFR.set_servo_pulsewidth(propPins['fr'], maxValue)
+        piFL.set_servo_pulsewidth(propPins['fl'], maxValue)
+        print("Connect the battery. Wait for two beeps and a gradual falling tone, then press Enter")
+        inp = input()
+        if inp == '':            
+            piBL.set_servo_pulsewidth(propPins['bl'], minValue)
+            piBR.set_servo_pulsewidth(propPins['br'], minValue)
+            piFR.set_servo_pulsewidth(propPins['fr'], minValue)
+            piFL.set_servo_pulsewidth(propPins['fl'], minValue)
+            print("Sleep for 7...")
+            time.sleep(7)
+            print("Sleep for 5...")
+            time.sleep (5)
+            print("Setting servo pulse width...")
+            piBL.set_servo_pulsewidth(propPins['bl'], 0)
+            piBR.set_servo_pulsewidth(propPins['br'], 0)
+            piFR.set_servo_pulsewidth(propPins['fr'], 0)
+            piFL.set_servo_pulsewidth(propPins['fl'], 0)
+            time.sleep(2)
+            print("Arming ESC...")
+            piBL.set_servo_pulsewidth(propPins['bl'], minValue)
+            piBR.set_servo_pulsewidth(propPins['br'], minValue)
+            piFR.set_servo_pulsewidth(propPins['fr'], minValue)
+            piFL.set_servo_pulsewidth(propPins['fl'], minValue)
+            time.sleep(1)
+            print("Calibration end...")
+
+"""
 Function Name: control
 Description: Control motor
 Parameters: N/A
@@ -191,17 +234,20 @@ Parameters: N/A
 Return: N/A
 """  
 def main():
-    (pi, propPin) = switch()
+    # Calibrate all motors on first time launch
+    calibrateAll()
+    
+    """(pi, propPin) = switch()
     print("For first time launch, select calibrate")    
     while True:
         print("Type the exact word for the function you want")
-  	print("calibrate OR manual OR control OR arm OR stop OR switch")
-  	inp = input()
-  	if inp == "manual":
+        print("calibrate OR manual OR control OR arm OR stop OR switch")
+        inp = input()
+        if inp == "manual":
             manualDrive(pi, propPin)
-  	elif inp == "calibrate":
+        elif inp == "calibrate":
             calibrate(pi, propPin)
-  	elif inp == "arm":
+        elif inp == "arm":
  	    arm(pi, propPin)
   	elif inp == "control":
   	    control(pi, propPin)
@@ -210,7 +256,7 @@ def main():
   	elif inp == "switch":
  	    (pi, propPin) = switch()
   	else :
-            print("Type calibrate OR manual OR control OR arm OR stop OR switch")
+            print("Type calibrate OR manual OR control OR arm OR stop OR switch")"""
 
 #Start of the program
 if __name__ == '__main__':
