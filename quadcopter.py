@@ -181,27 +181,36 @@ def switch():
             break
         else :
             print("Type bl OR br OR fr OR fl to choose motor")
-    return(pi, propPin)
-	 	   
+    return(pi, propPin) 
+
+"""
+Function Name: switch
+Description: This is the arming procedure of an ESC 
+Parameters: N/A
+Return: N/A
+"""  
+def main():
+	(pi, propPin) = switch()
+	print("For first time launch, select calibrate")    
+	while True:
+  	  print("Type the exact word for the function you want")
+ 	   print("calibrate OR manual OR control OR arm OR stop OR switch")    
+ 	   inp = input()
+ 	   if inp == "manual":
+  	      manualDrive(pi, propPin)
+ 	   elif inp == "calibrate":
+ 	       calibrate(pi, propPin)
+ 	   elif inp == "arm":
+ 	      arm(pi, propPin)
+ 	   elif inp == "control":
+  	      control(pi, propPin)
+ 	   elif inp == "stop":
+ 	       stop(pi, propPin)
+ 	   elif inp == "switch":
+ 	       (pi, propPin) = switch()
+	   else :
+  	       print("Type calibrate OR manual OR control OR arm OR stop OR switch")
 
 #Start of the program
-(pi, propPin) = switch()
-print("For first time launch, select calibrate")    
-while True:
-    print("Type the exact word for the function you want")
-    print("calibrate OR manual OR control OR arm OR stop OR switch")    
-    inp = input()
-    if inp == "manual":
-        manualDrive(pi, propPin)
-    elif inp == "calibrate":
-        calibrate(pi, propPin)
-    elif inp == "arm":
-       arm(pi, propPin)
-    elif inp == "control":
-        control(pi, propPin)
-    elif inp == "stop":
-        stop(pi, propPin)
-    elif inp == "switch":
-        (pi, propPin) = switch()
-    else :
-        print("Type calibrate OR manual OR control OR arm OR stop OR switch")
+if __name__ == '__main__':
+	main()

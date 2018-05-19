@@ -26,23 +26,64 @@
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 
+// IMU
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
+
+int activeIdx = 0;
 
 #define PIN_CHL1_ROLL   53 // Channel 1
 #define PIN_CHL2_PITCH  52 // Channel 2
 #define PIN_CHL3_THRUST 51 // Channel 3
 #define PIN_CHL4_YAW    50 // Channel 4
 
-double chl[4] = {0, 0, 0, 0};
+int commandsDisplay[4] = {0, 0, 0, 0};
+const int rollIdx = 0;
+const int pitchIdx = 1;
+const int thrustIdx = 2;
+const int yawIdx = 3;
 
-int mappedData = 0;
+int actualOrientations[3] = {0, 0, 0};
+const int orientationIndexYaw = 0;
+const int orientationIndexPitch = 1;
+const int orientationIndexRoll = 2;
 
+const int rollMinRx = 1000;
+const int rollMaxRx = 2000;
+const int rollMinDisplay = -10;
+const int rollMaxDisplay = 10;
+
+const int pitchMinRx = 1000;
+const int pitchMaxRx = 2000;
+const int pitchMinDisplay = -10;
+const int pitchMaxDisplay = 10;
+
+const int thrustMinRx = 1000;
+const int thrustMaxRx = 2000;
+const int thrustMinDisplay = 0;
+const int thrustMaxDisplay = 10;
+
+const int yawMinRx = 1000;
+const int yawMaxRx = 2000;
+const int yawMinDisplay = -10;
+const int yawMaxDisplay = 10;
+
+/*
+ *Function Name: setup
+ *Description: TBD
+ *Parameters: N/A
+ *Return:N/A
+*/
 void setup() {
-  delay(1000);
+  // Set up pin change interuppts for our
+  // RC receiver PWM input
+  PCICR |= (1 << PCIE0);
+  PCMSK0 |= (1 << PCINT0);
+  
   pinMode(PIN_CHL1_ROLL, INPUT);
   pinMode(PIN_CHL2_PITCH, INPUT);
   pinMode(PIN_CHL3_THRUST, INPUT);
   pinMode(PIN_CHL4_YAW, INPUT);
+  
   Serial.begin(9600);
   Serial.println("Flight Control"); 
   Serial.println("");
@@ -60,32 +101,34 @@ void setup() {
   bno.setExtCrystalUse(true);
 }
 
+/*
+ *Function Name: loop
+ *Description: TBD
+ *Parameters: N/A
+ *Return:N/A
+*/
 void loop() {
-  chl[0] = pulseIn(PIN_CHL1_ROLL, HIGH, 25000);
-  chl[1] = pulseIn(PIN_CHL2_PITCH, HIGH, 25000);
-  chl[2] = pulseIn(PIN_CHL3_THRUST, HIGH, 25000);
-  chl[3] = pulseIn(PIN_CHL4_YAW, HIGH, 25000);
-  
-  Serial.print("COMMANDS");
-  
-  Serial.print("\tRoll: ");
-  mappedData = map(chl[0], 1530, 2000, 0, 255);
-  Serial.print(mappedData);
+  //When you commanded Thrust 
+      //The QuadCopter should overall increase or decrease the thrust of all ESCs accordingly
+      
+  getActuals();
 
-  Serial.print("\tPitch: ");
-  mappedData = map(chl[1], 1530, 2000, 0, 255);
-  Serial.print(mappedData);
+  //When you commanded Roll 
+      //The QuadCopter should roll in the direction and amount commanded
+  //When you commanded Pitch 
+      //The QuadCopter should pitch in the direction and amount commanded
+  //When you commanded Yaw 
+      //The QuadCopter should yaw in the direction and amount commanded
 
-  Serial.print("\tYaw: ");
-  mappedData = map(chl[2], 1530, 2000, 0, 255);
-  Serial.print(mappedData);
-    
-  Serial.print("\tThrust: ");
-  mappedData = map(chl[3], 1530, 2000, 0, 255);
-  Serial.println(mappedData);
+}
 
-  delay(1000);
-  
+/*
+ *Function Name: getActuals
+ *Description: TBD
+ *Parameters: N/A
+ *Return:N/A
+*/
+void getActuals(){
   /* Get a new sensor event */
   sensors_event_t event;
   bno.getEvent(&event);
@@ -101,4 +144,51 @@ void loop() {
   Serial.print(event.orientation.z, 4);
   Serial.println("");
   Serial.println("");
+
+  actualOrientations[orientationIndexYaw] = event.orientation.x;
+  actualOrientations[orientationIndexPitch] = event.orientation.y;
+  actualOrientations[orientationIndexRoll] = event.orientation.z;
+  
+  delay(1000);
 }
+
+/*
+ *Function Name: PCINT0_vect
+ *Description: Handler for command interrupt
+ *Parameters: N/A
+ *Return:N/A
+*/
+ISR(PCINT0_vect){ 
+  Serial.print("COMMANDS ");
+   
+  // Round robin check on commanded pins
+  if(activeIdx == rollIdx) {
+    activeIdx = pitchIdx;
+    commandsDisplay[rollIdx] = pulseIn(PIN_CHL1_ROLL, HIGH, 25000);
+  } 
+  else if(activeIdx == pitchIdx) {
+    activeIdx = thrustIdx;
+    commandsDisplay[pitchIdx] = pulseIn(PIN_CHL2_PITCH, HIGH, 25000);
+  } 
+  else if(activeIdx == thrustIdx) {
+    activeIdx = yawIdx;
+    commandsDisplay[thrustIdx] = pulseIn(PIN_CHL3_THRUST, HIGH, 25000);
+  } 
+  else if(activeIdx == yawIdx) {
+    activeIdx = rollIdx;
+    commandsDisplay[yawIdx] = pulseIn(PIN_CHL4_YAW, HIGH, 25000);
+  } 
+
+  Serial.print("\tRoll: ");
+  Serial.print(map(commandsDisplay[rollIdx], rollMinRx, rollMaxRx, rollMinDisplay, rollMaxDisplay)); 
+  
+  Serial.print("\tPitch: ");
+  Serial.print(map(commandsDisplay[pitchIdx], pitchMinRx, pitchMaxRx, pitchMinDisplay, pitchMaxDisplay)); 
+    
+  Serial.print("\tThrust: ");
+  Serial.print(map(commandsDisplay[thrustIdx], thrustMinRx, thrustMaxRx, thrustMinDisplay, thrustMaxDisplay)); 
+
+  Serial.print("\tYaw: ");
+  Serial.println(map(commandsDisplay[yawIdx], yawMinRx, yawMaxRx, yawMinDisplay, yawMaxDisplay)); 
+}
+
