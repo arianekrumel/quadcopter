@@ -15,19 +15,20 @@ os.system ("sudo pigpiod")
 time.sleep(1) 
 
 # Connect GPIO pins to ESCs
-propPinBL = 4
-propPinBR = 17 # Blue wires
-propPinFR = 27 # Red wires
-propPinFL = 22 # Green wires
+propPins = {'bl':4, 'br':17, 'fr':27, 'fl':22}
+propPins['bl'] = 4
+propPins['br'] = 17 # Blue wires
+propPins['fr'] = 27 # Red wires
+propPins['fl'] = 22 # Green wires
 
 piBL = pigpio.pi();
-piBL.set_servo_pulsewidth(propPinBL, 0) 
+piBL.set_servo_pulsewidth(propPins['bl'], 0) 
 piBR = pigpio.pi();
-piBR.set_servo_pulsewidth(propPinBR, 0) 
+piBR.set_servo_pulsewidth(propPins['br'], 0) 
 piFR = pigpio.pi();
-piFR.set_servo_pulsewidth(propPinFR, 0) 
+piFR.set_servo_pulsewidth(propPins['fr'], 0) 
 piFL = pigpio.pi();
-piFL.set_servo_pulsewidth(propPinFL, 0) 
+piFL.set_servo_pulsewidth(propPins['fl'], 0) 
 
 maxValue = 2000
 minValue = 700
@@ -35,7 +36,7 @@ startingSpeed = 700
 
 """
 Function Name: arm
-Description: Stop every action your Pi is performing for ESC ofcourse.
+Description: Stop every action your Pi is performing for ESC of course.
 Parameters: N/A
 Return:N/A
 """           
@@ -165,19 +166,19 @@ def switch():
         inp = input()
         if inp == "bl":
             pi = piBL
-            propPin = propPinBL
+            propPin = propPins['bl']
             break
         elif inp == "br":
             pi = piBR
-            propPin = propPinBR
+            propPin = propPins['br']
             break
         elif inp == "fr":
             pi = piFR
-            propPin = propPinFR
+            propPin = propPins['fr']
             break
         elif inp == "fl":
             pi = piFL
-            propPin = propPinFL
+            propPin = propPins['fl']
             break
         else :
             print("Type bl OR br OR fr OR fl to choose motor")
@@ -190,26 +191,26 @@ Parameters: N/A
 Return: N/A
 """  
 def main():
-	(pi, propPin) = switch()
-	print("For first time launch, select calibrate")    
-	while True:
-  	  print("Type the exact word for the function you want")
- 	   print("calibrate OR manual OR control OR arm OR stop OR switch")    
- 	   inp = input()
- 	   if inp == "manual":
-  	      manualDrive(pi, propPin)
- 	   elif inp == "calibrate":
- 	       calibrate(pi, propPin)
- 	   elif inp == "arm":
- 	      arm(pi, propPin)
- 	   elif inp == "control":
-  	      control(pi, propPin)
- 	   elif inp == "stop":
- 	       stop(pi, propPin)
- 	   elif inp == "switch":
- 	       (pi, propPin) = switch()
-	   else :
-  	       print("Type calibrate OR manual OR control OR arm OR stop OR switch")
+    (pi, propPin) = switch()
+    print("For first time launch, select calibrate")    
+    while True:
+        print("Type the exact word for the function you want")
+  	print("calibrate OR manual OR control OR arm OR stop OR switch")
+  	inp = input()
+  	if inp == "manual":
+            manualDrive(pi, propPin)
+  	elif inp == "calibrate":
+            calibrate(pi, propPin)
+  	elif inp == "arm":
+ 	    arm(pi, propPin)
+  	elif inp == "control":
+  	    control(pi, propPin)
+  	elif inp == "stop":
+ 	    stop(pi, propPin)
+  	elif inp == "switch":
+ 	    (pi, propPin) = switch()
+  	else :
+            print("Type calibrate OR manual OR control OR arm OR stop OR switch")
 
 #Start of the program
 if __name__ == '__main__':
