@@ -18,11 +18,12 @@ os.system ("sudo pigpiod")
 time.sleep(1) 
 
 # Connect GPIO pins to ESCs
-propPins = {'bl':4, 'br':17, 'fr':27, 'fl':22}
-propPins['bl'] = 4
-propPins['br'] = 17 # Blue wires
-propPins['fr'] = 27 # Red wires
-propPins['fl'] = 22 # Green wires
+propPins = {
+	'bl':4, 
+	'br':17, # Blue wires
+	'fr':27, # Red wires
+	'fl':22 # Green wires
+}
 
 piBL = pigpio.pi();
 piBL.set_servo_pulsewidth(propPins['bl'], 0) 
@@ -35,39 +36,31 @@ piFL.set_servo_pulsewidth(propPins['fl'], 0)
 
 maxValue = 2000
 minValue = 700
-startingSpeed = 700
+startingSpeed = 800
+
+thrustCommanded = 0
+rollCommanded = 0
+pitchCommanded = 0
+yawCommanded = 0
+speedCurrent = {'bl':startingSpeed, 'br':startingSpeed, 'fr':startingSpeed, 'fl':startingSpeed}
 
 """
-Function Name: arm
+Function Name: stopAll
 Description: Stop every action your Pi is performing for ESC of course.
 Parameters: N/A
 Return:N/A
 """           
-def stop(pi, propPin):
-    pi.set_servo_pulsewidth(propPin, 0)
-    pi.stop(pi, propPin)
-
-"""
-Function Name: manualDrive
-Description: Program your ESC, if required
-Parameters: N/Api.set_servo_pulsewidth(propPin,inp)
-Return:N/A
-"""
-def manualDrive(pi, propPin):
-    print("You have selected manual option so give a value between 0 and you max value")   
-    while True:
-        inp = input()
-        if inp == "stop":
-            stop(pi, propPin)
-            break
-        elif inp == "control":
-            control(pi, propPin)
-            break
-        elif inp == "arm":
-            arm(pi, propPin)
-            break	
-        else:
-            pi.set_servo_pulsewidth(propPin,inp)
+def stopAll():
+    piBL.set_servo_pulsewidth(propPins['bl'], 0)
+    piBR.set_servo_pulsewidth(propPins['br'], 0)
+    piFR.set_servo_pulsewidth(propPins['fr'], 0)
+    piFL.set_servo_pulsewidth(propPins['fl'], 0)
+    
+    
+    piBL.stop(piBL, propPins['bl'])
+    piBR.stop(piBR, propPins['br'])
+    piFR.stop(piFR, propPins['fr'])
+    piFL.stop(piFL, propPins['fl'])
 
 """
 Function Name: calibrateAll
@@ -113,101 +106,130 @@ def calibrateAll():
             print("Calibrated and armed...")
 
 """
-Function Name: thrustAll
+Function Name: thrustPID
 Description: TBD
 Parameters: N/A
 Return: N/A
 """  
-def thrustAll(speed):
-    piBL.set_servo_pulsewidth(propPins['bl'], speed)
-    piBR.set_servo_pulsewidth(propPins['br'], speed)
-    piFR.set_servo_pulsewidth(propPins['fr'], speed)
-    piFL.set_servo_pulsewidth(propPins['fl'], speed)
+def thrustPID(inp):
+	if(thrustCommanded > inp): # decrementing the speed 
+		speedCurrent['bl'] -= 100;
+		speedCurrent['br'] -= 100;
+		speedCurrent['fr'] -= 100;
+		speedCurrent['fl'] -= 100;
+	if(thrustCommanded < inp): # incrementing the speed
+		speedCurrent['bl'] += 100;
+		speedCurrent['br'] += 100;
+		speedCurrent['fr'] += 100;
+		speedCurrent['fl'] += 100;
+	thrustCommanded = inp
+		
+    piBL.set_servo_pulsewidth(propPins['bl'], speedCurrent['bl'])
+    piBR.set_servo_pulsewidth(propPins['br'], speedCurrent['br'])
+    piFR.set_servo_pulsewidth(propPins['fr'], speedCurrent['fr'])
+    piFL.set_servo_pulsewidth(propPins['fl'], speedCurrent['fl'])
 
 """
-Function Name: control
-Description: Control motor
+Function Name: rollPID
+Description: TBD
 Parameters: N/A
 Return: N/A
 """  
-def control(pi, propPin): 
-    print("Starting the motor, I hope its calibrated and armed, if not restart prompt by giving 'x'")
-    time.sleep(1)
-    
-    speed = startingSpeed
-    print("Controls - a: decrease speed & d: increase speed OR q: decrease a lot of speed & e: increase a lot of speed")
-    while True:
-        pi.set_servo_pulsewidth(propPin, speed)
-        inp = input()
-        
-        if inp == "q":
-            speed -= 100    # decrementing the speed like hell
-            print("speed = {}".format(speed))
-        elif inp == "e":    
-            speed += 100    # incrementing the speed like hell
-            print("speed = {}".format(speed))
-        elif inp == "d":
-            speed += 10     # incrementing the speed 
-            print("speed = {}".format(speed))
-        elif inp == "a":
-            speed -= 10     # decrementing the speed
-            print("speed = {}".format(speed))
-        elif inp == "stop":
-            stop(pi, propPin)          #going for the stop function
-            break
-        elif inp == "manual":
-            manualDrive(pi, propPin)
-            break
-        elif inp == "arm":
-            arm(pi, propPin)
-            break	
-        else:
-            print("Please press a, q, d OR e")
+def rollPID(rollMeasured):
+	if(rollCommanded > rollMeasured): # thrust on left 2 blades is higher than right 2 
+		speedCurrent['bl'] -= 50; # lower left 2
+		speedCurrent['br'] += 50; # boost right 2
+		speedCurrent['fr'] += 50;
+		speedCurrent['fl'] -= 50; 
+	if(rollCommanded < rollMeasured): # thrust on right 2 blades is higher than left 2
+		speedCurrent['bl'] += 50; # boost left 2
+		speedCurrent['br'] -= 50; # lower right 2
+		speedCurrent['fr'] -= 50;
+		speedCurrent['fl'] += 50;
+	rollCommanded = rollMeasured
+	
+    piBL.set_servo_pulsewidth(propPins['bl'], speedCurrent['bl'])
+    piBR.set_servo_pulsewidth(propPins['br'], speedCurrent['br'])
+    piFR.set_servo_pulsewidth(propPins['fr'], speedCurrent['fr'])
+    piFL.set_servo_pulsewidth(propPins['fl'], speedCurrent['fl'])
 
 """
-Function Name: mainprint("speed = {}".format(speed))
+Function Name: pitchPID
+Description: TBD
+Parameters: N/A
+Return: N/A
+"""  
+def pitchPID(pitchMeasured):
+	if(pitchCommanded > pitchMeasured): # thrust on back 2 blades is higher than front 2
+		speedCurrent['bl'] -= 50; # lower back 2
+		speedCurrent['br'] -= 50;
+		speedCurrent['fr'] += 50; # boost front 2
+		speedCurrent['fl'] += 50; 
+	if(pitchCommanded < pitchMeasured): # thrust on front 2 blades is higher than back 2
+		speedCurrent['bl'] += 50; # boost back 2
+		speedCurrent['br'] += 50;
+		speedCurrent['fr'] -= 50; # lower front 2
+		speedCurrent['fl'] -= 50;
+	pitchCommanded = pitchMeasured
+	
+    piBL.set_servo_pulsewidth(propPins['bl'], speedCurrent['bl'])
+    piBR.set_servo_pulsewidth(propPins['br'], speedCurrent['br'])
+    piFR.set_servo_pulsewidth(propPins['fr'], speedCurrent['fr'])
+    piFL.set_servo_pulsewidth(propPins['fl'], speedCurrent['fl'])
+
+"""
+Function Name: yawPID
+Description: TBD
+Parameters: N/A
+Return: N/A
+"""  
+def yawPID(yawMeasured):
+	if(yawCommanded > yawMeasured): # thrust on 2 CC blades is higher than 2 C 
+		speedCurrent['bl'] += 50; # boost 2 C
+		speedCurrent['br'] -= 50; # lower 2 CC
+		speedCurrent['fr'] += 50;
+		speedCurrent['fl'] -= 50;
+	if(yawCommanded < yawMeasured): # thrust on 2 C blades is higher than 2 CC
+		speedCurrent['bl'] -= 50; # lower 2 C
+		speedCurrent['br'] += 50; # boost 2 CC
+		speedCurrent['fr'] -= 50;
+		speedCurrent['fl'] += 50;
+	yawCommanded = yawMeasured
+	
+    piBL.set_servo_pulsewidth(propPins['bl'], speedCurrent['bl'])
+    piBR.set_servo_pulsewidth(propPins['br'], speedCurrent['br'])
+    piFR.set_servo_pulsewidth(propPins['fr'], speedCurrent['fr'])
+    piFL.set_servo_pulsewidth(propPins['fl'], speedCurrent['fl'])
+
+"""
+Function Name: main
 Description: TBD 
 Parameters: N/A
 Return: N/A
 """  
 def main():
-    #print("Calibrate all for first time launch")
-    #calibrateAll()
+    print("Calibrate all for first time launch")
+    if False:
+    	calibrateAll()
     
-    print(ser.name)
-    ser.write(b'hello')
-    
-    # Establish serial connection with controller
-    thrustCurrent = 0
-    thrustInput = 0
-    
-    while 1 :
-    	str = "thrust:0"#ser.readline()
+    while True:
+    	print("Establish serial connection with controller")
+    	inp = ser.readline()
     	strArr = str.split(':')
-    	if(strArr[0] == 'thrust'):
-            thrustInput = int(strArr[1])
-            
-            if(thrustInput > thrustCurrent):
-                thrustAll(thrustInput)
-            if(thrustInput < thrustCurrent):
-                thrustAll(thrustInput)
-                
-            thrustCurrent = thrustInput
-            print("speed = {}".format(thrustCurrent))
-            
-        #if(strArr[0] = 'stop'):
-            #break
-    	
-      
-    #while True:
-        #inp = input()
-        #if inp == "manual":
-            #manualDrive(pi, propPin)
-  	    #elif inp == "control":
-  	        #control(pi, propPin)
-  	    #elif inp == "stop":
- 	        #stop(pi, propPin)
+        cmd = strArr[0]
+        val = int(strArr[1])
+        
+    	if(cmd == 'thrust'):
+    		thrustPID(1000)
+    	elif(cmd == 'roll'):
+    		rollPID(val)
+    	elif(cmd == 'pitch'):
+    		pitchPID(val)
+    	elif(cmd == 'yaw'):
+    		yawPID(val)
+    	elif(cmd == 'stop'):
+ 	        stopAll()
 
-#Start of the program
+print("Start of the program")
 if __name__ == '__main__':
 	main()

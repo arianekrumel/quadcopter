@@ -49,23 +49,23 @@ const int orientationIndexRoll = 2;
 
 const int rollMinRx = 1000;
 const int rollMaxRx = 2000;
-const int rollMinDisplay = -10;
-const int rollMaxDisplay = 10;
+const int rollMinDisplay = 0;
+const int rollMaxDisplay = 255;
 
 const int pitchMinRx = 1000;
 const int pitchMaxRx = 2000;
-const int pitchMinDisplay = -10;
-const int pitchMaxDisplay = 10;
+const int pitchMinDisplay = 0;
+const int pitchMaxDisplay = 255;
 
 const int thrustMinRx = 1000;
 const int thrustMaxRx = 2000;
 const int thrustMinDisplay = 0;
-const int thrustMaxDisplay = 10;
+const int thrustMaxDisplay = 100;
 
 const int yawMinRx = 1000;
 const int yawMaxRx = 2000;
-const int yawMinDisplay = -10;
-const int yawMaxDisplay = 10;
+const int yawMinDisplay = 0;
+const int yawMaxDisplay = 255;
 
 /*
  *Function Name: setup
@@ -108,47 +108,44 @@ void setup() {
  *Return:N/A
 */
 void loop() {
+  
+  // Get PID values
+  getPID();
+  
   //When you commanded Thrust 
+  //if (commandsDisplay[thrustIdx])
       //The QuadCopter should overall increase or decrease the thrust of all ESCs accordingly
-      
-  getActuals();
-
   //When you commanded Roll 
       //The QuadCopter should roll in the direction and amount commanded
   //When you commanded Pitch 
       //The QuadCopter should pitch in the direction and amount commanded
   //When you commanded Yaw 
       //The QuadCopter should yaw in the direction and amount commanded
-
 }
 
 /*
- *Function Name: getActuals
+ *Function Name: getPID
  *Description: TBD
  *Parameters: N/A
  *Return:N/A
 */
-void getActuals(){
+void getPID(){
   /* Get a new sensor event */
   sensors_event_t event;
   bno.getEvent(&event);
 
-  /* Display the floating point data */
-  Serial.print("ACTUAL");
+  /* Display the orientation data */
+  actualOrientations[orientationIndexYaw] = event.orientation.x; 
+  actualOrientations[orientationIndexPitch] = event.orientation.y; 
+  actualOrientations[orientationIndexRoll] = event.orientation.z; 
   
-  Serial.print("\tYaw: ");
-  Serial.print(event.orientation.x, 4);
-  Serial.print("\tPitch: ");
-  Serial.print(event.orientation.y, 4);
-  Serial.print("\tRoll: ");
-  Serial.print(event.orientation.z, 4);
-  Serial.println("");
-  Serial.println("");
+  Serial.print("yaw:");
+  Serial.println(actualOrientations[orientationIndexYaw]);
+  Serial.print("pitch:");
+  Serial.println(actualOrientations[orientationIndexPitch]);
+  Serial.print("roll:");
+  Serial.println(actualOrientations[orientationIndexRoll]);
 
-  actualOrientations[orientationIndexYaw] = event.orientation.x;
-  actualOrientations[orientationIndexPitch] = event.orientation.y;
-  actualOrientations[orientationIndexRoll] = event.orientation.z;
-  
   delay(1000);
 }
 
