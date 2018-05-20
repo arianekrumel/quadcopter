@@ -50,7 +50,7 @@ def stop(pi, propPin):
 """
 Function Name: manualDrive
 Description: Program your ESC, if required
-Parameters: N/A
+Parameters: N/Api.set_servo_pulsewidth(propPin,inp)
 Return:N/A
 """
 def manualDrive(pi, propPin):
@@ -113,6 +113,18 @@ def calibrateAll():
             print("Calibrated and armed...")
 
 """
+Function Name: thrustAll
+Description: TBD
+Parameters: N/A
+Return: N/A
+"""  
+def thrustAll(speed):
+    piBL.set_servo_pulsewidth(propPins['bl'], speed)
+    piBR.set_servo_pulsewidth(propPins['br'], speed)
+    piFR.set_servo_pulsewidth(propPins['fr'], speed)
+    piFL.set_servo_pulsewidth(propPins['fl'], speed)
+
+"""
 Function Name: control
 Description: Control motor
 Parameters: N/A
@@ -153,7 +165,7 @@ def control(pi, propPin):
             print("Please press a, q, d OR e")
 
 """
-Function Name: main
+Function Name: mainprint("speed = {}".format(speed))
 Description: TBD 
 Parameters: N/A
 Return: N/A
@@ -162,9 +174,30 @@ def main():
     #print("Calibrate all for first time launch")
     #calibrateAll()
     
+    print(ser.name)
+    ser.write(b'hello')
+    
     # Establish serial connection with controller
+    thrustCurrent = 0
+    thrustInput = 0
+    
     while 1 :
-    	ser.readline()
+    	str = "thrust:0"#ser.readline()
+    	strArr = str.split(':')
+    	if(strArr[0] == 'thrust'):
+            thrustInput = int(strArr[1])
+            
+            if(thrustInput > thrustCurrent):
+                thrustAll(thrustInput)
+            if(thrustInput < thrustCurrent):
+                thrustAll(thrustInput)
+                
+            thrustCurrent = thrustInput
+            print("speed = {}".format(thrustCurrent))
+            
+        #if(strArr[0] = 'stop'):
+            #break
+    	
       
     #while True:
         #inp = input()
