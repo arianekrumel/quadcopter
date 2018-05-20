@@ -8,6 +8,9 @@ http://www.instructables.com/id/Driving-an-ESCBrushless-Motor-Using-Raspberry-Pi
 import os
 import time
 import pigpio
+import serial
+
+ser = serial.Serial('/dev/ttyACM0', 9600)
 
 os.system ("sudo pigpiod")
 
@@ -67,35 +70,6 @@ def manualDrive(pi, propPin):
             pi.set_servo_pulsewidth(propPin,inp)
 
 """
-Function Name: calibrate
-Description: This is the auto calibration procedure of a normal ESC
-Parameters: N/A
-Return:N/A
-"""                
-def calibrate(pi, propPin):
-    pi.set_servo_pulsewidth(propPin, 0)
-    print("Disconnect the battery and press Enter")
-    inp = input()
-    if inp == '':
-        pi.set_servo_pulsewidth(propPin, maxValue)
-        print("Connect the battery. Wait for two beeps and a gradual falling tone, then press Enter")
-        inp = input()
-        if inp == '':            
-            pi.set_servo_pulsewidth(propPin, minValue)
-            print("Sleep for 7...")
-            time.sleep(7)
-            print("Sleep for 5...")
-            time.sleep (5)
-            print("Setting servo pulse width...")
-            pi.set_servo_pulsewidth(propPin, 0)
-            time.sleep(2)
-            print("Arming ESC...")
-            pi.set_servo_pulsewidth(propPin, minValue)
-            time.sleep(1)
-            print("Control start...")
-            control(pi, propPin)
-
-"""
 Function Name: calibrateAll
 Description: This is the auto calibration procedure of a normal ESC
 Parameters: N/A
@@ -136,7 +110,7 @@ def calibrateAll():
             piFR.set_servo_pulsewidth(propPins['fr'], minValue)
             piFL.set_servo_pulsewidth(propPins['fl'], minValue)
             time.sleep(1)
-            print("Calibration end...")
+            print("Calibrated and armed...")
 
 """
 Function Name: control
@@ -179,84 +153,27 @@ def control(pi, propPin):
             print("Please press a, q, d OR e")
 
 """
-Function Name: arm
-Description: This is the arming procedure of an ESC 
-Parameters: N/A
-Return: N/A
-"""              
-def arm(pi, propPin):
-    print("Connect the battery and press Enter")
-    inp = input()    
-    if inp == '':
-        pi.set_servo_pulsewidth(propPin, 0)
-        time.sleep(1)
-        pi.set_servo_pulsewidth(propPin, maxValue)
-        time.sleep(1)
-        pi.set_servo_pulsewidth(propPin, minValue)
-        time.sleep(1)
-        control(pi, propPin) 
-
-"""
-Function Name: switch
-Description: This is the arming procedure of an ESC 
-Parameters: N/A
-Return: N/A
-"""  
-def switch():
-    print("Switch!")
-    while True:
-        print("Type bl OR br OR fr OR fl to choose motor")
-        inp = input()
-        if inp == "bl":
-            pi = piBL
-            propPin = propPins['bl']
-            break
-        elif inp == "br":
-            pi = piBR
-            propPin = propPins['br']
-            break
-        elif inp == "fr":
-            pi = piFR
-            propPin = propPins['fr']
-            break
-        elif inp == "fl":
-            pi = piFL
-            propPin = propPins['fl']
-            break
-        else :
-            print("Type bl OR br OR fr OR fl to choose motor")
-    return(pi, propPin) 
-
-"""
-Function Name: switch
-Description: This is the arming procedure of an ESC 
+Function Name: main
+Description: TBD 
 Parameters: N/A
 Return: N/A
 """  
 def main():
-    # Calibrate all motors on first time launch
-    calibrateAll()
+    #print("Calibrate all for first time launch")
+    #calibrateAll()
     
-    """(pi, propPin) = switch()
-    print("For first time launch, select calibrate")    
-    while True:
-        print("Type the exact word for the function you want")
-        print("calibrate OR manual OR control OR arm OR stop OR switch")
-        inp = input()
-        if inp == "manual":
-            manualDrive(pi, propPin)
-        elif inp == "calibrate":
-            calibrate(pi, propPin)
-        elif inp == "arm":
- 	    arm(pi, propPin)
-  	elif inp == "control":
-  	    control(pi, propPin)
-  	elif inp == "stop":
- 	    stop(pi, propPin)
-  	elif inp == "switch":
- 	    (pi, propPin) = switch()
-  	else :
-            print("Type calibrate OR manual OR control OR arm OR stop OR switch")"""
+    # Establish serial connection with controller
+    while 1 :
+    	ser.readline()
+      
+    #while True:
+        #inp = input()
+        #if inp == "manual":
+            #manualDrive(pi, propPin)
+  	    #elif inp == "control":
+  	        #control(pi, propPin)
+  	    #elif inp == "stop":
+ 	        #stop(pi, propPin)
 
 #Start of the program
 if __name__ == '__main__':
