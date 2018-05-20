@@ -30,6 +30,7 @@ piBL.set_servo_pulsewidth(propPins['bl'], 0)
 piBR = pigpio.pi();
 piBR.set_servo_pulsewidth(propPins['br'], 0) 
 piFR = pigpio.pi();
+
 piFR.set_servo_pulsewidth(propPins['fr'], 0) 
 piFL = pigpio.pi();
 piFL.set_servo_pulsewidth(propPins['fl'], 0) 
@@ -169,7 +170,7 @@ Description: TBD
 Parameters: N/A
 Return: N/A
 """  
-def rollPID(rollCommanded, rollMeasured):
+def rollPID(rollCommanded, rollMeasured): #-180-180, midpoint is 1
     if(rollCommanded > rollMeasured): # thrust on left 2 blades is higher than right 2 
         print("Roll: thrust on left 2 blades is higher than right 2")
         speedCurrent['bl'] -= 50 # lower left 2
@@ -193,7 +194,7 @@ Description: TBD
 Parameters: N/A
 Return: N/A
 """  
-def pitchPID(pitchCommanded, pitchMeasured):
+def pitchPID(pitchCommanded, pitchMeasured): #-90-90 midpoint is 0
     if(pitchCommanded > pitchMeasured): # thrust on back 2 blades is higher than front 2
         print("Pitch: thrust on back 2 blades is higher than front 2")
         speedCurrent['bl'] -= 50 # lower back 2
@@ -217,7 +218,7 @@ Description: TBD
 Parameters: N/A
 Return: N/A
 """  
-def yawPID(yawCommanded, yawMeasured):
+def yawPID(yawCommanded, yawMeasured): # from 0-360, midpoint is 180
     if(yawCommanded > yawMeasured): # thrust on 2 CC blades is higher than 2 C 
         print("Yaw: thrust on 2 CC blades is higher than 2 C")
         speedCurrent['bl'] += 50 # boost 2 C
@@ -243,23 +244,32 @@ Return: N/A
 """  
 def main():
     print("Calibrate all for first time launch")
-    #calibrateAll()
+    calibrateAll()
     
     thrustCommanded = 0
-    rollCommanded = 0
+
+    rollCommanded = 1
     pitchCommanded = 0
-    yawCommanded = 0
+    yawCommanded = 180
     
     print("Establish serial connection with controller")
     
     while True:
+        
     	inp = ser.readline()
-    	str = inp.decode('utf-8')
+    	try:
+            str = inp.decode('utf-8')
+    	except:
+            continue
+            
     	print(str)
     	strArr = str.split(':')
     	cmd = strArr[0]
     	if(len(strArr) > 1):
-            val = int(strArr[1])
+            try:
+                val = int(strArr[1])
+            except:
+                continue
             
     	if(cmd=='thrustCmd'):
             thrustCommanded = thrustAll(val)
