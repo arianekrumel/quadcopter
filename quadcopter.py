@@ -34,14 +34,9 @@ piFR.set_servo_pulsewidth(propPins['fr'], 0)
 piFL = pigpio.pi();
 piFL.set_servo_pulsewidth(propPins['fl'], 0) 
 
-maxValue = 2000
+maxValue = 1800
 minValue = 700
 startingSpeed = 800
-
-thrustCommanded = 0
-rollCommanded = 0
-pitchCommanded = 0
-yawCommanded = 0
 speedCurrent = {'bl':startingSpeed, 'br':startingSpeed, 'fr':startingSpeed, 'fl':startingSpeed}
 
 """
@@ -112,10 +107,30 @@ Parameters: N/A
 Return: N/A
 """  
 def setSpeed():
-    #piBL.set_servo_pulsewidth(propPins['bl'], speedCurrent['bl'])
-    #piBR.set_servo_pulsewidth(propPins['br'], speedCurrent['br'])
-    #piFR.set_servo_pulsewidth(propPins['fr'], speedCurrent['fr'])
-    #piFL.set_servo_pulsewidth(propPins['fl'], speedCurrent['fl'])
+    if(speedCurrent['bl'] > maxValue):
+        speedCurrent['bl'] = maxValue
+    if(speedCurrent['bl'] < minValue):
+        speedCurrent['bl'] = minValue
+    piBL.set_servo_pulsewidth(propPins['bl'], speedCurrent['bl'])
+    
+    if(speedCurrent['br'] > maxValue):
+        speedCurrent['br'] = maxValue
+    if(speedCurrent['br'] < minValue):
+        speedCurrent['br'] = minValue
+    piBR.set_servo_pulsewidth(propPins['br'], speedCurrent['br'])
+    
+    if(speedCurrent['fr'] > maxValue):
+        speedCurrent['fr'] = maxValue
+    if(speedCurrent['fr'] < minValue):
+        speedCurrent['fr'] = minValue
+    piFR.set_servo_pulsewidth(propPins['fr'], speedCurrent['fr'])
+    
+    if(speedCurrent['fl'] > maxValue):
+        speedCurrent['fl'] = maxValue
+    if(speedCurrent['fl'] < minValue):
+        speedCurrent['fl'] = minValue
+    piFL.set_servo_pulsewidth(propPins['fl'], speedCurrent['fl'])
+    
     print("Set speed")
 
 """
@@ -149,22 +164,23 @@ Description: TBD
 Parameters: N/A
 Return: N/A
 """  
-def rollPID(rollMeasured):
+def rollPID(rollCommanded, rollMeasured):
     if(rollCommanded > rollMeasured): # thrust on left 2 blades is higher than right 2 
         print("Roll: thrust on left 2 blades is higher than right 2")
         speedCurrent['bl'] -= 50 # lower left 2
         speedCurrent['br'] += 50 # boost right 2
         speedCurrent['fr'] += 50
-        speedCurrent['fl'] -= 50 
+        speedCurrent['fl'] -= 50
+        setSpeed()
     if(rollCommanded < rollMeasured): # thrust on right 2 blades is higher than left 2
         print("Roll: thrust on right 2 blades is higher than left 2")
         speedCurrent['bl'] += 50 # boost left 2
         speedCurrent['br'] -= 50 # lower right 2
         speedCurrent['fr'] -= 50
         speedCurrent['fl'] += 50
-    rollCommanded = rollMeasured
+        setSpeed()
     
-    setSpeed()
+    return rollMeasured
 
 """
 Function Name: pitchPID
@@ -172,22 +188,23 @@ Description: TBD
 Parameters: N/A
 Return: N/A
 """  
-def pitchPID(pitchMeasured):
+def pitchPID(pitchCommanded, pitchMeasured):
     if(pitchCommanded > pitchMeasured): # thrust on back 2 blades is higher than front 2
         print("Pitch: thrust on back 2 blades is higher than front 2")
         speedCurrent['bl'] -= 50 # lower back 2
         speedCurrent['br'] -= 50
         speedCurrent['fr'] += 50 # boost front 2
-        speedCurrent['fl'] += 50 
+        speedCurrent['fl'] += 50
+        setSpeed()
     if(pitchCommanded < pitchMeasured): # thrust on front 2 blades is higher than back 2
         print("Pitch: thrust on front 2 blades is higher than back 2")
         speedCurrent['bl'] += 50 # boost back 2
         speedCurrent['br'] += 50
         speedCurrent['fr'] -= 50 # lower front 2
         speedCurrent['fl'] -= 50
-    pitchCommanded = pitchMeasured
+        setSpeed()
     
-    setSpeed()
+    return pitchMeasured
 
 """
 Function Name: yawPID
@@ -195,22 +212,23 @@ Description: TBD
 Parameters: N/A
 Return: N/A
 """  
-def yawPID(yawMeasured):
+def yawPID(yawCommanded, yawMeasured):
     if(yawCommanded > yawMeasured): # thrust on 2 CC blades is higher than 2 C 
         print("Yaw: thrust on 2 CC blades is higher than 2 C")
         speedCurrent['bl'] += 50 # boost 2 C
         speedCurrent['br'] -= 50 # lower 2 CC
         speedCurrent['fr'] += 50
         speedCurrent['fl'] -= 50
+        setSpeed()
     if(yawCommanded < yawMeasured): # thrust on 2 C blades is higher than 2 CC
         print("Yaw: thrust on 2 C blades is higher than 2 CC")
         speedCurrent['bl'] -= 50 # lower 2 C
         speedCurrent['br'] += 50 # boost 2 CC
         speedCurrent['fr'] -= 50
         speedCurrent['fl'] += 50
-    yawCommanded = yawMeasured
+        setSpeed()
 	
-    setSpeed()
+    return yawMeasured
 
 """
 Function Name: main
@@ -220,32 +238,33 @@ Return: N/A
 """  
 def main():
     print("Calibrate all for first time launch")
-    #calibrateAll()
+    calibrateAll()
     
-    #print("Start motors")
-    #thrustPID(1000)
+    print("Start motors")
+    thrustPID(1000)
+    
+    thrustCommanded = 0
+    rollCommanded = 0
+    pitchCommanded = 0
+    yawCommanded = 0
+    
+    print("Establish serial connection with controller")
     
     while True:
-    	print("Establish serial connection with controller")
     	inp = ser.readline()
     	str = inp.decode('utf-8')
-    	print(str)
     	strArr = str.split(':')
     	cmd = strArr[0]
-    	print("Cmd: "+ cmd)
     	if(len(strArr) > 1):
-            val = int(strArr[2])
-            #print(strArr[1])
-            #print(strArr[2])
-            #print(strArr[3])
-        #if(cmd == 'pitch'):
-    	    #pitchPID(val)
-    	#elif(cmd == 'yaw'):
-    	    #yawPID(val)
-    	#elif(cmd == 'roll'):
-            #rollPID(val)
-    	#elif(cmd == 'stop'):
- 	    #stopAll()
+            val = int(strArr[1])
+    	if(cmd=='roll'):
+            rollCommanded = rollPID(rollCommanded, val)
+    	elif(cmd == 'pitch'):
+            pitchCommanded = pitchPID(pitchCommanded, val)
+    	elif(cmd == 'yaw'):
+            yawCommanded = yawPID(yawCommanded, val)
+    	elif(cmd == 'stop'):
+ 	    stopAll()
 
 print("Start of the program")
 if __name__ == '__main__':
