@@ -49,23 +49,23 @@ const int orientationIndexRoll = 2;
 
 const int rollMinRx = 1000;
 const int rollMaxRx = 2000;
-const int rollMinDisplay = 0;
-const int rollMaxDisplay = 255;
+const int rollMinDisplay = -180;
+const int rollMaxDisplay = 180;
 
 const int pitchMinRx = 1000;
 const int pitchMaxRx = 2000;
-const int pitchMinDisplay = 0;
-const int pitchMaxDisplay = 255;
+const int pitchMinDisplay = -90;
+const int pitchMaxDisplay = 90;
 
 const int thrustMinRx = 1000;
 const int thrustMaxRx = 2000;
 const int thrustMinDisplay = 0;
-const int thrustMaxDisplay = 100;
+const int thrustMaxDisplay = 10;
 
 const int yawMinRx = 1000;
 const int yawMaxRx = 2000;
 const int yawMinDisplay = 0;
-const int yawMaxDisplay = 255;
+const int yawMaxDisplay = 360;
 
 /*
  *Function Name: setup
@@ -85,8 +85,8 @@ void setup() {
   pinMode(PIN_CHL4_YAW, INPUT);
   
   Serial.begin(9600);
-  Serial.println("Flight Control"); 
-  Serial.println("");
+  //Serial.println("Flight Control"); 
+  //Serial.println("");
 
   /* Initialise the sensor */
   if (!bno.begin())
@@ -108,19 +108,8 @@ void setup() {
  *Return:N/A
 */
 void loop() {
-  
   // Get PID values
   getPID();
-  
-  //When you commanded Thrust 
-  //if (commandsDisplay[thrustIdx])
-      //The QuadCopter should overall increase or decrease the thrust of all ESCs accordingly
-  //When you commanded Roll 
-      //The QuadCopter should roll in the direction and amount commanded
-  //When you commanded Pitch 
-      //The QuadCopter should pitch in the direction and amount commanded
-  //When you commanded Yaw 
-      //The QuadCopter should yaw in the direction and amount commanded
 }
 
 /*
@@ -141,12 +130,13 @@ void getPID(){
   
   Serial.print("yaw:");
   Serial.println(actualOrientations[orientationIndexYaw]);
+  delay(100);
   Serial.print("pitch:");
   Serial.println(actualOrientations[orientationIndexPitch]);
+  delay(100);
   Serial.print("roll:");
   Serial.println(actualOrientations[orientationIndexRoll]);
-
-  delay(1000);
+  delay(100);
 }
 
 /*
@@ -156,8 +146,7 @@ void getPID(){
  *Return:N/A
 */
 ISR(PCINT0_vect){ 
-  Serial.print("COMMANDS ");
-   
+     
   // Round robin check on commanded pins
   if(activeIdx == rollIdx) {
     activeIdx = pitchIdx;
@@ -176,16 +165,20 @@ ISR(PCINT0_vect){
     commandsDisplay[yawIdx] = pulseIn(PIN_CHL4_YAW, HIGH, 25000);
   } 
 
-  Serial.print("\tRoll: ");
-  Serial.print(map(commandsDisplay[rollIdx], rollMinRx, rollMaxRx, rollMinDisplay, rollMaxDisplay)); 
+  Serial.print("rollCmd:");
+  Serial.println(map(commandsDisplay[rollIdx], rollMinRx, rollMaxRx, rollMinDisplay, rollMaxDisplay));
+  delay(100);
   
-  Serial.print("\tPitch: ");
-  Serial.print(map(commandsDisplay[pitchIdx], pitchMinRx, pitchMaxRx, pitchMinDisplay, pitchMaxDisplay)); 
+  Serial.print("pitchCmd:");
+  Serial.println(map(commandsDisplay[pitchIdx], pitchMinRx, pitchMaxRx, pitchMinDisplay, pitchMaxDisplay)); 
+  delay(100);
     
-  Serial.print("\tThrust: ");
-  Serial.print(map(commandsDisplay[thrustIdx], thrustMinRx, thrustMaxRx, thrustMinDisplay, thrustMaxDisplay)); 
+  Serial.print("thrustCmd:");
+  Serial.println(map(commandsDisplay[thrustIdx], thrustMinRx, thrustMaxRx, thrustMinDisplay, thrustMaxDisplay));
+  delay(100); 
 
-  Serial.print("\tYaw: ");
-  Serial.println(map(commandsDisplay[yawIdx], yawMinRx, yawMaxRx, yawMinDisplay, yawMaxDisplay)); 
+  Serial.print("yawCmd:");
+  Serial.println(map(commandsDisplay[yawIdx], yawMinRx, yawMaxRx, yawMinDisplay, yawMaxDisplay));
+  delay(100); 
 }
 
