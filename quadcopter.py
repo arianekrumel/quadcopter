@@ -10,7 +10,7 @@ import time
 import pigpio
 import serial
 
-ser = serial.Serial('/dev/ttyACM0', 9600)
+ser = serial.Serial('/dev/ttyACM1', 9600)
 
 os.system ("sudo pigpiod")
 
@@ -19,10 +19,10 @@ time.sleep(1)
 
 # Connect GPIO pins to ESCs
 propPins = {
-	'bl':4, 
-	'br':17, # Blue wires
-	'fr':27, # Red wires
-	'fl':22 # Green wires
+    'bl':4, 
+    'br':17, # Blue wires
+    'fr':27, # Red wires
+    'fl':22 # Green wires
 }
 
 piBL = pigpio.pi();
@@ -50,7 +50,6 @@ def stopAll():
     piBR.set_servo_pulsewidth(propPins['br'], 0)
     piFR.set_servo_pulsewidth(propPins['fr'], 0)
     piFL.set_servo_pulsewidth(propPins['fl'], 0)
-    
     
     piBL.stop(piBL, propPins['bl'])
     piBR.stop(piBR, propPins['br'])
@@ -134,29 +133,35 @@ def setSpeed():
     print("Set speed")
 
 """
-Function Name: thrustPID
+Function Name: thrustAll
 Description: TBD
 Parameters: N/A
 Return: N/A
 """  
-def thrustPID(inp):
-    speedCurrent['bl'] = inp
-    speedCurrent['br'] = inp
-    speedCurrent['fr'] = inp
-    speedCurrent['fl'] = inp
-    #if(thrustCommanded > inp): # decrementing the speed 
-    	#speedCurrent['bl'] -= 100
-    	#speedCurrent['br'] -= 100
-    	#speedCurrent['fr'] -= 100
-    	#speedCurrent['fl'] -= 100
-    #if(thrustCommanded < inp): # incrementing the speed
-    	#speedCurrent['bl'] += 100
-    	#speedCurrent['br'] += 100
-    	#speedCurrent['fr'] += 100
-    	#speedCurrent['fl'] += 100
-    thrustCommanded = inp
+def thrustAll(thrustCommanded):
+    print("Command thrust: " + str(thrustCommanded))
+    #calibrated thrusts per motor
+    thrustCalibrated = {
+        'bl': [0, 725, 825, 925, 1150, 1250, 1350, 1400, 1450, 1550, 1650], 
+        'br': [0, 700, 800, 900, 1150, 1300, 1400, 1400, 1525, 1550, 1650], 
+        'fr': [0, 700, 800, 900, 1050, 1250, 1350, 1450, 1475, 1600, 1700], 
+        'fl': [0, 700, 800, 900, 1050, 1150, 1425, 1450, 1475, 1500, 1600] 
+    }
     
+    if(thrustCommanded > 10):
+        thrustCommanded = 10
+    elif(thrustCommanded < 0):
+        thrustCommanded = 0
+        
+    speedCurrent['bl'] = thrustCalibrated['bl'][thrustCommanded]
+    speedCurrent['br'] = thrustCalibrated['br'][thrustCommanded]
+    speedCurrent['fr'] = thrustCalibrated['fr'][thrustCommanded]
+    speedCurrent['fl'] = thrustCalibrated['fl'][thrustCommanded]
+    print(speedCurrent)
     setSpeed()
+    
+    return thrustCommanded
+    
 
 """
 Function Name: rollPID
@@ -238,10 +243,7 @@ Return: N/A
 """  
 def main():
     print("Calibrate all for first time launch")
-    calibrateAll()
-    
-    print("Start motors")
-    thrustPID(1000)
+    #calibrateAll()
     
     thrustCommanded = 0
     rollCommanded = 0
@@ -253,16 +255,26 @@ def main():
     while True:
     	inp = ser.readline()
     	str = inp.decode('utf-8')
+    	print(str)
     	strArr = str.split(':')
     	cmd = strArr[0]
     	if(len(strArr) > 1):
             val = int(strArr[1])
-    	if(cmd=='roll'):
+            
+    	if(cmd=='thrustCmd'):
+            thrustCommanded = thrustAll(val)
+    	elif(cmd=='roll'):
             rollCommanded = rollPID(rollCommanded, val)
+    	elif(cmd=='rollCmd'):
+            rollCommanded = val
     	elif(cmd == 'pitch'):
             pitchCommanded = pitchPID(pitchCommanded, val)
+    	elif(cmd=='pitchCmd'):
+            pitchCommanded = val
     	elif(cmd == 'yaw'):
             yawCommanded = yawPID(yawCommanded, val)
+    	elif(cmd=='yawCmd'):
+            yawCommanded = val
     	elif(cmd == 'stop'):
  	    stopAll()
 
